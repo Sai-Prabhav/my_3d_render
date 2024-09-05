@@ -42,12 +42,12 @@ typedef struct
 
 // int numb_obj = 0;
 // obj_3d *objs;
-int point_radius = 3;
+int point_radius = 1;
 point_3d o = {0, 0, 0};
 point_3d eye_p = {0, 0, 0};
-point_3d eye = {15, 0, 0};
-double plane_dist = 0.3;
-double zoom = 25;
+point_3d eye = {0, 0, 20};
+double plane_dist = 0.6;
+double zoom = 70;
 
 void print_num(double x, char *tex)
 {
@@ -361,19 +361,27 @@ obj_3d *add_obj(obj_3d obj, obj_3d objs[])
 point_3d a = {0, 0, 100};
 point_3d b = {1, 0, 0};
 point_3d lis[30] = {{3, 4, -100}, {3, 4, -100}, {3, 4, -100}};
-
+int numb_cube=50;
 void calc()
 {
-    turn_y(&eye, (point_3d){0, 0, 0}, 0.03);
-    turn_obj_x(objs[2], (point_3d){0, 0, 0}, -0.1);
-    turn_obj_z(objs[3], (point_3d){0, 0, 0}, -0.1);
-    turn_obj_x(objs[1], (point_3d){0, 0, 0}, 0.1);
-    turn_obj_z(objs[0], (point_3d){0, 0, 0}, 0.05);
-    turn_obj_z(objs[5], (point_3d){0, 0, 0}, 0.05);
-    turn_obj_y(objs[5], (point_3d){0, 0, 0}, 0.05);
-    turn_obj_x(objs[5], (point_3d){0, 0, 0}, -0.05);
-    turn_obj_x(objs[4], (point_3d){0, 0, 0}, -0.05);
-    translate_obj(objs[4], (point_3d){0, 0.2, 0});
+    for (int ff = 0; ff < numb_cube; ff++)
+    {
+        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01*(ff%20));
+        turn_obj_z(objs[ff], (point_3d){0, 0, 0}, -0.01*(ff%20));
+        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, -0.01*(ff%20));
+    }
+
+    // turn_y(&eye, (point_3d){0, 0, 0}, 0.03);
+    // turn_obj_x(objs[2], (point_3d){0, 0, 0}, -0.1);
+    // turn_obj_z(objs[3], (point_3d){0, 0, 0}, -0.1);
+    // turn_obj_x(objs[1], (point_3d){0, 0, 0}, 0.1);
+    // turn_obj_z(objs[0], (point_3d){0, 0, 0}, 0.05);
+    // turn_obj_z(objs[5], (point_3d){0, 0, 0}, 0.05);
+    // turn_obj_y(objs[5], (point_3d){0, 0, 0}, 0.05);
+    // turn_obj_x(objs[5], (point_3d){0, 0, 0}, -0.05);
+    // turn_obj_x(objs[4], (point_3d){0, 0, 0}, -0.05);
+    // translate_obj(objs[4], (point_3d){0, 0.2, 0});
+
     print_point(eye);
 }
 
@@ -386,20 +394,17 @@ void draw()
     }
     save_sketch("hello.svg");
 }
-
 int main(int argc, char const *argv[])
 {
     objs = (obj_3d *)malloc(sizeof(obj_3d));
-    objs = add_obj(cube((point_3d){0, 0, 0}, 10), objs);
-    objs = add_obj(cube((point_3d){0, 0, 5}, 5), objs);
-    objs = add_obj(cube((point_3d){0, 0, -5}, 5), objs);
-    objs = add_obj(cube((point_3d){0, 0, 0}, 5), objs);
-    objs = add_obj(cube((point_3d){0, -20, 0}, 5), objs);
-    objs = add_obj(cube((point_3d){0, 0, 0}, 15), objs);
+    for (int q = 0; q < numb_cube; q++)
+    {
+        objs = add_obj(cube((point_3d){0, 0, 0}, (q + 1)/5), objs);
+    }
 
     set_size(1200);
-    set_stroke_width(3);
-    for (int l = 0; l < 200; l++)
+    set_stroke_width(1);
+    for (int l = 0; l < 400; l++)
     {
         calc();
         draw();
@@ -407,6 +412,7 @@ int main(int argc, char const *argv[])
     }
 
     free(objs);
+    
     // abs_3d(point_3d{3, -4, 100});
     // point_3d p = {10, 934, 34};
     // project(p);
