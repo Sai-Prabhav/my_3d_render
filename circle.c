@@ -6,7 +6,6 @@
 #include <unistd.h>
 
 #define n 8
-#define no_obj 4
 
 // x-> right
 // y-> up
@@ -41,6 +40,8 @@ typedef struct
 
 } obj_3d;
 
+// int numb_obj = 0;
+// obj_3d *objs;
 int point_radius = 3;
 point_3d o = {0, 0, 0};
 point_3d eye_p = {0, 0, 0};
@@ -52,6 +53,7 @@ void print_num(double x, char *tex)
 {
     printf("%s: %lf\n", tex, x);
 }
+
 void print_point(point_3d p)
 {
     printf("X: %lf\tY: %lf\tZ: %lf\n", p.x, p.y, p.z);
@@ -67,6 +69,7 @@ double abs_3d(point_3d a)
     point_3d c = {0, 0, 0};
     return e_dis(a, c);
 }
+
 point_3d add_3d(point_3d a, point_3d b)
 {
     point_3d r;
@@ -178,11 +181,11 @@ void turn_point(point_3d *point, point_3d p, point_3d angle)
     turn_z(point, p, angle.z);
 }
 
-void turn_obj(obj_3d obj, point_3d p,point_3d angle)
+void turn_obj(obj_3d obj, point_3d p, point_3d angle)
 {
     for (int i = 0; i < obj.len_points; i++)
     {
-        turn_point(&obj.points[i], p,angle);
+        turn_point(&obj.points[i], p, angle);
     }
 }
 
@@ -208,6 +211,19 @@ void turn_obj_z(obj_3d obj, point_3d p, double angle)
         turn_z(&obj.points[i], p, angle);
     }
 }
+
+void translate_obj(obj_3d obj, point_3d diff)
+{
+    point_3d sum;
+    for (int i = 0; i < obj.len_points; i++)
+    {
+        sum = add_3d(obj.points[i], diff);
+        obj.points[i].x = sum.x;
+        obj.points[i].y = sum.y;
+        obj.points[i].z = sum.z;
+    }
+}
+
 obj_3d create_obj(point_3d points[], line lines[], int len_points, int len_lines)
 {
     obj_3d obj;
@@ -321,26 +337,50 @@ obj_3d cube(point_3d center, double size)
     return create_obj(cube_points, cube_line, 8, 12);
 }
 
-point_3d a = {0, 0, 100};
-point_3d b = {0, 0, 0};
-point_3d lis[30] = {{3, 4, -100}, {3, 4, -100}, {3, 4, -100}};
+int numb_obj = 0;
+// int size_obj=0;
+obj_3d *objs;
 
-obj_3d objs[no_obj];
+obj_3d *add_obj(obj_3d obj, obj_3d objs[])
+{
+    if (numb_obj == 0)
+    {
+        objs = (obj_3d *)malloc(sizeof(obj_3d));
+    }
+
+    ++numb_obj;
+    objs = (obj_3d *)realloc(objs, sizeof(obj_3d) * (numb_obj));
+    // objs[numb_obj - 1]->len_lines=obj.;
+    objs[numb_obj - 1].len_lines = obj.len_lines;
+    objs[numb_obj - 1].len_points = obj.len_points;
+    objs[numb_obj - 1].lines = obj.lines;
+    objs[numb_obj - 1].points = obj.points;
+    return objs;
+}
+
+point_3d a = {0, 0, 100};
+point_3d b = {1, 0, 0};
+point_3d lis[30] = {{3, 4, -100}, {3, 4, -100}, {3, 4, -100}};
 
 void calc()
 {
-    // turn_y(&eye, (point_3d){0, 0, -20}, 0.03);
-    turn_obj_x(objs[1], (point_3d){0, 0, 5}, 0.1);
-    turn_obj_x(objs[2], (point_3d){0, 0, -5}, -0.1);
+    turn_y(&eye, (point_3d){0, 0, 0}, 0.03);
+    turn_obj_x(objs[2], (point_3d){0, 0, 0}, -0.1);
     turn_obj_z(objs[3], (point_3d){0, 0, 0}, -0.1);
+    turn_obj_x(objs[1], (point_3d){0, 0, 0}, 0.1);
     turn_obj_z(objs[0], (point_3d){0, 0, 0}, 0.05);
+    turn_obj_z(objs[5], (point_3d){0, 0, 0}, 0.05);
+    turn_obj_y(objs[5], (point_3d){0, 0, 0}, 0.05);
+    turn_obj_x(objs[5], (point_3d){0, 0, 0}, -0.05);
+    turn_obj_x(objs[4], (point_3d){0, 0, 0}, -0.05);
+    translate_obj(objs[4], (point_3d){0, 0.2, 0});
     print_point(eye);
 }
 
 void draw()
 {
     clear_sketch();
-    for (int no_ob = 0; no_ob < no_obj; no_ob++)
+    for (int no_ob = 0; no_ob < numb_obj; no_ob++)
     {
         draw_obj(objs[no_ob]);
     }
@@ -349,11 +389,16 @@ void draw()
 
 int main(int argc, char const *argv[])
 {
-    objs[0] = cube((point_3d){0, 0, 0}, 10);
-    objs[1] = cube((point_3d){0, 0, 5}, 5);
-    objs[2] = cube((point_3d){0, 0, -5}, 5);
-    objs[3] = cube((point_3d){0, 0, 0}, 5);
+    objs = (obj_3d *)malloc(sizeof(obj_3d));
+    objs = add_obj(cube((point_3d){0, 0, 0}, 10), objs);
+    objs = add_obj(cube((point_3d){0, 0, 5}, 5), objs);
+    objs = add_obj(cube((point_3d){0, 0, -5}, 5), objs);
+    objs = add_obj(cube((point_3d){0, 0, 0}, 5), objs);
+    objs = add_obj(cube((point_3d){0, -20, 0}, 5), objs);
+    objs = add_obj(cube((point_3d){0, 0, 0}, 15), objs);
 
+    set_size(1200);
+    set_stroke_width(3);
     for (int l = 0; l < 200; l++)
     {
         calc();
@@ -361,9 +406,10 @@ int main(int argc, char const *argv[])
         usleep(100000);
     }
 
+    free(objs);
     // abs_3d(point_3d{3, -4, 100});
     // point_3d p = {10, 934, 34};
     // project(p);
-    save_sketch("hello.svg");
+    // save_sketch("hell0.svg");
     return 0;
 }
