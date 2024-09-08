@@ -51,8 +51,8 @@ double zoom = 70;
 int frame_number = 0;
 int numb_obj = 0;
 obj_3d *objs;
-int max_frames = 600;
-int numb_cube = 300;
+int max_frames = 500;
+int numb_cube = 10;
 
 
 void save_frame()
@@ -376,8 +376,8 @@ void calc()
     for (int ff = 0; ff < numb_cube; ff++)
     {
         turn_obj_z(objs[ff], (point_3d){0, 0, 0}, 0.01 * ((ff % 5) + 1));
-        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+2 )% 5) + 1));
-        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+3) % 5) + 1));
+        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+0 )% 5) + 1));
+        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+0) % 5) + 1));
     }
 }
 
@@ -390,11 +390,12 @@ void draw()
         draw_obj(objs[no_ob]);
     }
     save_sketch("hello.svg");
-    save_frame();
+    // save_frame();
 }
 
 int main(int argc, char const *argv[])
-{
+{   
+    // set_stroke("#00000088");
     objs = (obj_3d *)malloc(sizeof(obj_3d));
     for (int q = 0; q < numb_cube; q++)
     {
@@ -402,12 +403,12 @@ int main(int argc, char const *argv[])
     }
 
     set_size(1200);
-    set_stroke_width(1);
+    set_stroke_width(2);
     for (int l = 0; l < max_frames; l++)
     {
         calc();
         draw();
-        usleep(1);
+        usleep(100000);
     }
 
     free(objs);

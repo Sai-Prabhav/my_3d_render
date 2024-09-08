@@ -172,7 +172,7 @@ int main(void)
     turn_points(points, a, p);
     for (int i = 0; i < 100; i++)
     {
-                                        calc(i, points);
+        calc(i, points);
         draw();
         usleep(100000);
     }
