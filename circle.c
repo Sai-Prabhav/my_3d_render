@@ -48,6 +48,21 @@ point_3d eye_p = {0, 0, 0};
 point_3d eye = {0, 0, 20};
 double plane_dist = 0.6;
 double zoom = 70;
+int frame_number = 0;
+int numb_obj = 0;
+obj_3d *objs;
+int max_frames = 600;
+int numb_cube = 300;
+
+
+void save_frame()
+{
+    char file_path[50];
+    sprintf(file_path, "frames/frame_%d.svg", frame_number+10000);
+    save_sketch(file_path);
+    printf("saved: %s\n",file_path);
+    ++frame_number;
+}
 
 void print_num(double x, char *tex)
 {
@@ -78,6 +93,7 @@ point_3d add_3d(point_3d a, point_3d b)
     r.z = a.z + b.z;
     return r;
 }
+
 point_3d sub_3d(point_3d a, point_3d b)
 {
     point_3d r;
@@ -86,6 +102,7 @@ point_3d sub_3d(point_3d a, point_3d b)
     r.z = a.z - b.z;
     return r;
 }
+
 point_3d mult_3d(point_3d a, double b)
 {
     point_3d r;
@@ -204,6 +221,7 @@ void turn_obj_y(obj_3d obj, point_3d p, double angle)
         turn_y(&obj.points[i], p, angle);
     }
 }
+
 void turn_obj_z(obj_3d obj, point_3d p, double angle)
 {
     for (int i = 0; i < obj.len_points; i++)
@@ -242,69 +260,6 @@ obj_3d create_obj(point_3d points[], line lines[], int len_points, int len_lines
     return obj;
 }
 
-point_2d project(point_3d point)
-{
-    // eye will be perpendecular to the plane
-
-    point_2d return_2d;
-    point_3d line_vector = sub_3d(point, eye);
-    point_3d plane_point = mult_3d(eye, plane_dist);
-    double lam = dot_3d(eye, sub_3d(plane_point, eye)) / dot_3d(line_vector, eye);
-    // printf("lambda is : %lf\n\n", lam);
-    point_3d on_plane = add_3d(eye, mult_3d(line_vector, lam));
-    // print_point(on_plane);
-
-    point_3d per = eye;
-    // turn the y
-    double theta_y = atan(per.x / per.z);
-    turn_y(&per, o, theta_y);
-
-    // turn x
-    double theta_x = atan(per.y / per.z);
-    turn_x(&per, o, theta_x);
-    // print_point(per);
-
-    // do the same tranformation to the point
-    turn_y(&on_plane, plane_point, theta_y);
-    turn_x(&on_plane, plane_point, theta_x);
-
-    return_2d.x = on_plane.x;
-    return_2d.y = on_plane.y;
-    // print_point(on_plane);
-    return return_2d;
-}
-
-void draw_points(point_2d points[], int len_points)
-{
-
-    for (int i = 0; i < len_points; i++)
-    {
-        draw_circle(points[i].x, points[i].y, point_radius);
-    }
-}
-
-void draw_lines(obj_3d obj, point_2d points[])
-{
-    for (int i = 0; i < obj.len_lines; i++)
-    {
-
-        draw_line(points[obj.lines[i].start].x, points[obj.lines[i].start].y, points[obj.lines[i].end].x, points[obj.lines[i].end].y);
-    }
-}
-void draw_obj(obj_3d obj)
-{
-    point_2d points_2d[obj.len_points];
-    for (int k = 0; k < obj.len_points; k++)
-    {
-        point_2d my_point_2d = project(obj.points[k]);
-        points_2d[k].x = my_point_2d.x * zoom;
-        points_2d[k].y = my_point_2d.y * zoom;
-    }
-    // exit(0);
-    draw_points(points_2d, obj.len_points);
-    draw_lines(obj, points_2d);
-}
-
 obj_3d cube(point_3d center, double size)
 {
     point_3d cube_points[8] = {
@@ -337,10 +292,6 @@ obj_3d cube(point_3d center, double size)
     return create_obj(cube_points, cube_line, 8, 12);
 }
 
-int numb_obj = 0;
-// int size_obj=0;
-obj_3d *objs;
-
 obj_3d *add_obj(obj_3d obj, obj_3d objs[])
 {
     if (numb_obj == 0)
@@ -358,32 +309,78 @@ obj_3d *add_obj(obj_3d obj, obj_3d objs[])
     return objs;
 }
 
-point_3d a = {0, 0, 100};
-point_3d b = {1, 0, 0};
-point_3d lis[30] = {{3, 4, -100}, {3, 4, -100}, {3, 4, -100}};
-int numb_cube=50;
+point_2d project(point_3d point)
+{
+    // eye will be perpendecular to the plane
+
+    point_2d return_2d;
+    point_3d line_vector = sub_3d(point, eye);
+    point_3d plane_point = mult_3d(eye, plane_dist);
+    double lam = dot_3d(eye, sub_3d(plane_point, eye)) / dot_3d(line_vector, eye);
+    point_3d on_plane = add_3d(eye, mult_3d(line_vector, lam));
+
+    point_3d per = eye;
+    // turn the y
+    double theta_y = atan(per.x / per.z);
+    turn_y(&per, o, theta_y);
+
+    // turn x
+    double theta_x = atan(per.y / per.z);
+    turn_x(&per, o, theta_x);
+    // print_point(per);
+
+    // do the same tranformation to the point
+    turn_y(&on_plane, plane_point, theta_y);
+    turn_x(&on_plane, plane_point, theta_x);
+
+    return_2d.x = on_plane.x;
+    return_2d.y = on_plane.y;
+
+    return return_2d;
+}
+
+void draw_points(point_2d points[], int len_points)
+{
+
+    for (int i = 0; i < len_points; i++)
+    {
+        draw_circle(points[i].x, points[i].y, point_radius);
+    }
+}
+
+void draw_lines(obj_3d obj, point_2d points[])
+{
+    for (int i = 0; i < obj.len_lines; i++)
+    {
+
+        draw_line(points[obj.lines[i].start].x, points[obj.lines[i].start].y, points[obj.lines[i].end].x, points[obj.lines[i].end].y);
+    }
+}
+
+void draw_obj(obj_3d obj)
+{
+    point_2d points_2d[obj.len_points];
+    for (int k = 0; k < obj.len_points; k++)
+    {
+        point_2d my_point_2d = project(obj.points[k]);
+        points_2d[k].x = my_point_2d.x * zoom;
+        points_2d[k].y = my_point_2d.y * zoom;
+    }
+    // exit(0);
+    draw_points(points_2d, obj.len_points);
+    draw_lines(obj, points_2d);
+}
+
 void calc()
 {
     for (int ff = 0; ff < numb_cube; ff++)
     {
-        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01*(ff%20));
-        turn_obj_z(objs[ff], (point_3d){0, 0, 0}, -0.01*(ff%20));
-        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, -0.01*(ff%20));
+        turn_obj_z(objs[ff], (point_3d){0, 0, 0}, 0.01 * ((ff % 5) + 1));
+        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+2 )% 5) + 1));
+        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+3) % 5) + 1));
     }
-
-    // turn_y(&eye, (point_3d){0, 0, 0}, 0.03);
-    // turn_obj_x(objs[2], (point_3d){0, 0, 0}, -0.1);
-    // turn_obj_z(objs[3], (point_3d){0, 0, 0}, -0.1);
-    // turn_obj_x(objs[1], (point_3d){0, 0, 0}, 0.1);
-    // turn_obj_z(objs[0], (point_3d){0, 0, 0}, 0.05);
-    // turn_obj_z(objs[5], (point_3d){0, 0, 0}, 0.05);
-    // turn_obj_y(objs[5], (point_3d){0, 0, 0}, 0.05);
-    // turn_obj_x(objs[5], (point_3d){0, 0, 0}, -0.05);
-    // turn_obj_x(objs[4], (point_3d){0, 0, 0}, -0.05);
-    // translate_obj(objs[4], (point_3d){0, 0.2, 0});
-
-    print_point(eye);
 }
+
 
 void draw()
 {
@@ -393,29 +390,27 @@ void draw()
         draw_obj(objs[no_ob]);
     }
     save_sketch("hello.svg");
+    save_frame();
 }
+
 int main(int argc, char const *argv[])
 {
     objs = (obj_3d *)malloc(sizeof(obj_3d));
     for (int q = 0; q < numb_cube; q++)
     {
-        objs = add_obj(cube((point_3d){0, 0, 0}, (q + 1)/5), objs);
+        objs = add_obj(cube((point_3d){0, 0, 0}, (q + 1) / 2.5*50/numb_cube), objs);
     }
 
     set_size(1200);
     set_stroke_width(1);
-    for (int l = 0; l < 400; l++)
+    for (int l = 0; l < max_frames; l++)
     {
         calc();
         draw();
-        usleep(100000);
+        usleep(1);
     }
 
     free(objs);
-    
-    // abs_3d(point_3d{3, -4, 100});
-    // point_3d p = {10, 934, 34};
-    // project(p);
-    // save_sketch("hell0.svg");
+
     return 0;
 }
