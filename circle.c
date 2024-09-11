@@ -1,11 +1,7 @@
 #include <sketch.h>
-#include <stdlib.h>
-#include <time.h>
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#define n 8
 
 // x-> right
 // y-> up
@@ -54,13 +50,12 @@ obj_3d *objs;
 int max_frames = 500;
 int numb_cube = 10;
 
-
 void save_frame()
 {
     char file_path[50];
-    sprintf(file_path, "frames/frame_%d.svg", frame_number+10000);
+    sprintf(file_path, "frames/frame_%d.svg", frame_number + 10000);
     save_sketch(file_path);
-    printf("saved: %s\n",file_path);
+    printf("saved: %s\n", file_path);
     ++frame_number;
 }
 
@@ -371,16 +366,74 @@ void draw_obj(obj_3d obj)
     draw_lines(obj, points_2d);
 }
 
+obj_3d make_3d(char path[])
+{
+    FILE *fptr;
+    fptr = fopen(path, "r");
+    char line[100];
+    int i;
+    char num[5];
+    int digits;
+    while (fgets(line, 100, fptr))
+    {
+        printf("%s", line);
+        i = 0;
+        printf("%c\n", line[i]);
+
+        // printf("\nhi\n");
+        switch (line[i])
+        {
+        case 'c':
+
+            i += 1;
+            digits = 0;
+            while (line[++i] != ' ')
+            {
+                num[digits++] = line[i];
+            }
+            num[digits++] = '\0';
+            double x = atof(num);
+            
+            digits = 0;
+            while (line[++i] != ' ')
+            {
+                num[digits++] = line[i];
+            }
+            num[digits++] = '\0';
+            double y = atof(num);
+            digits = 0;
+            while (line[++i] != ' ')
+            {
+                num[digits++] = line[i];
+            }
+            num[digits++] = '\0';
+            double z = atof(num);
+
+            digits = 0;
+            while (line[++i] != '\0')
+            {
+                num[digits++] = line[i];
+            }
+            num[digits++] = '\0';
+            double size = atof(num);
+            print_point((point_3d){x, y, z});
+
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 void calc()
 {
     for (int ff = 0; ff < numb_cube; ff++)
     {
         turn_obj_z(objs[ff], (point_3d){0, 0, 0}, 0.01 * ((ff % 5) + 1));
-        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+0 )% 5) + 1));
-        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff+0) % 5) + 1));
+        turn_obj_x(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff + 0) % 5) + 1));
+        turn_obj_y(objs[ff], (point_3d){0, 0, 0}, 0.01 * (((ff + 0) % 5) + 1));
     }
 }
-
 
 void draw()
 {
@@ -394,24 +447,30 @@ void draw()
 }
 
 int main(int argc, char const *argv[])
-{   
-    // set_stroke("#00000088");
-    objs = (obj_3d *)malloc(sizeof(obj_3d));
-    for (int q = 0; q < numb_cube; q++)
-    {
-        objs = add_obj(cube((point_3d){0, 0, 0}, (q + 1) / 2.5*50/numb_cube), objs);
-    }
-
-    set_size(1200);
+{
+    set_sketch_size(1099, 1000);
     set_stroke_width(2);
-    for (int l = 0; l < max_frames; l++)
+
+    if (0 != 0)
     {
-        calc();
-        draw();
-        usleep(100000);
+        objs = (obj_3d *)malloc(sizeof(obj_3d));
+        for (int q = 0; q < numb_cube; q++)
+        {
+            objs = add_obj(cube((point_3d){0, 0, 0}, (q + 1) / 2.5 * 50 / numb_cube), objs);
+        }
+
+        for (int l = 0; l < max_frames; l++)
+        {
+            calc();
+            draw();
+            usleep(100000);
+        }
+        free(objs);
     }
-
-    free(objs);
-
+    char h[5] = "1244";
+    h[2] = '9';
+    h[3] = '\0';
+    make_3d("drawtext.3d");
+    printf("%ld", atol(h));
     return 0;
 }
