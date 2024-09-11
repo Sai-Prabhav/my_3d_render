@@ -287,7 +287,7 @@ obj_3d cube(point_3d center, double size)
     return create_obj(cube_points, cube_line, 8, 12);
 }
 
-obj_3d *add_obj(obj_3d obj, obj_3d objs[])
+void add_obj(obj_3d obj)
 {
     if (numb_obj == 0)
     {
@@ -301,7 +301,6 @@ obj_3d *add_obj(obj_3d obj, obj_3d objs[])
     objs[numb_obj - 1].len_points = obj.len_points;
     objs[numb_obj - 1].lines = obj.lines;
     objs[numb_obj - 1].points = obj.points;
-    return objs;
 }
 
 point_2d project(point_3d point)
@@ -414,10 +413,12 @@ obj_3d make_3d(char path[])
             {
                 num[digits++] = line[i];
             }
+            
             num[digits++] = '\0';
             double size = atof(num);
             print_point((point_3d){x, y, z});
 
+            add_obj(cube((point_3d){x, y, z},size));
             break;
         default:
             break;
@@ -456,7 +457,7 @@ int main(int argc, char const *argv[])
         objs = (obj_3d *)malloc(sizeof(obj_3d));
         for (int q = 0; q < numb_cube; q++)
         {
-            objs = add_obj(cube((point_3d){0, 0, 0}, (q + 1) / 2.5 * 50 / numb_cube), objs);
+            add_obj(cube((point_3d){0, 0, 0}, (q + 1) / 2.5 * 50 / numb_cube));
         }
 
         for (int l = 0; l < max_frames; l++)
@@ -470,7 +471,10 @@ int main(int argc, char const *argv[])
     char h[5] = "1244";
     h[2] = '9';
     h[3] = '\0';
-    make_3d("drawtext.3d");
+    make_3d("draw.3d");
+    draw();
+
+    save_sketch("cube.svg");
     printf("%ld", atol(h));
     return 0;
 }
