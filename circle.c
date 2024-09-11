@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <string.h>
 // x-> right
 // y-> up
 // z-> out of screen
@@ -38,12 +38,12 @@ typedef struct
 
 // int numb_obj = 0;
 // obj_3d *objs;
-int point_radius = 1;
+int point_radius = 3;
 point_3d o = {0, 0, 0};
 point_3d eye_p = {0, 0, 0};
 point_3d eye = {0, 0, 20};
 double plane_dist = 0.6;
-double zoom = 70;
+double zoom = 7;
 int frame_number = 0;
 int numb_obj = 0;
 obj_3d *objs;
@@ -365,63 +365,113 @@ void draw_obj(obj_3d obj)
     draw_lines(obj, points_2d);
 }
 
-obj_3d make_3d(char path[])
+double get_num(char text[], int *i)
+{
+    int digits;
+    char num[5];
+    digits = 0;
+    *i += 1;
+    while (text[*i] != ' ' && text[*i] != '\0')
+    {
+        num[digits++] = text[*i];
+        *i += 1;
+    }
+    num[digits++] = '\0';
+    return atof(num);
+}
+
+void get_str(char text[], int *i, char str[])
+{
+    int digits;
+    digits = 0;
+    while (text[*i] != ' ' && text[*i] != '\0')
+    {
+        str[digits++] = text[*i];
+        *i += 1;
+    }
+    str[digits++] = '\0';
+}
+
+void make_3d(char path[])
 {
     FILE *fptr;
     fptr = fopen(path, "r");
-    char line[100];
+    char text_line[100];
     int i;
     char num[5];
     int digits;
-    while (fgets(line, 100, fptr))
+    while (fgets(text_line, 100, fptr))
     {
-        printf("%s", line);
+        printf("%s", text_line);
         i = 0;
-        printf("%c\n", line[i]);
+        printf("%c\n", text_line[i]);
+        char command[10];
+        get_str(text_line, &i, command);
 
-        // printf("\nhi\n");
-        switch (line[i])
+        if (strcmp(command, "cube") == 0)
         {
-        case 'c':
-
             i += 1;
-            digits = 0;
-            while (line[++i] != ' ')
-            {
-                num[digits++] = line[i];
-            }
-            num[digits++] = '\0';
-            double x = atof(num);
-            
-            digits = 0;
-            while (line[++i] != ' ')
-            {
-                num[digits++] = line[i];
-            }
-            num[digits++] = '\0';
-            double y = atof(num);
-            digits = 0;
-            while (line[++i] != ' ')
-            {
-                num[digits++] = line[i];
-            }
-            num[digits++] = '\0';
-            double z = atof(num);
+            double x = get_num(text_line, &i);
+            double y = get_num(text_line, &i);
+            double z = get_num(text_line, &i);
+            double size = get_num(text_line, &i);
+            add_obj(cube((point_3d){x, y, z}, size));
+        }
+        else if (strcmp(command, "point") == 0)
+        {
+            i += 1;
+            point_3d solo_point[1] = {get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+            line lines[0];
+            add_obj(create_obj(solo_point, lines, 1, 0));
+        }
+        else if (strcmp(command, "line") == 0)
+        {
+            i += 1;
+            point_3d solo_point[2];
+            solo_point[0] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+            solo_point[1] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+            line lines[1] = {0, 1};
+            add_obj(create_obj(solo_point, lines, 2, 1));
+        }
+        else if (strcmp(command, "obj") == 0)
+        {
+            /*
+                the format of this is
+                obj max_points max_lines
+                point1_x point1_y point2_z
+                point2_x point2_y point2_z
+                point3_x point3_y point3_z
+                ...
+                point_max_points_x point_max_points_y point_max_points_z
+                line_1_start line_1_end
+                line_2_start line_2_end
+                line_3_start line_3_end
+                ...
+                line_max_line_start line_max_line_end
+            */
+            int max_points = get_num(text_line, &i);
+            int max_lines = get_num(text_line, &i);
+            point_3d obj_points[max_points];
+            line obj_lines[max_lines];
 
-            digits = 0;
-            while (line[++i] != '\0')
+            fgets(text_line, 100, fptr);
+            i = -1;
+            for (int point_index = 0; point_index < max_points; point_index++)
             {
-                num[digits++] = line[i];
+                obj_points[point_index] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+                fgets(text_line, 100, fptr);
+                i = -1;
             }
-            
-            num[digits++] = '\0';
-            double size = atof(num);
-            print_point((point_3d){x, y, z});
 
-            add_obj(cube((point_3d){x, y, z},size));
-            break;
-        default:
-            break;
+            // fgets(text_line, 100, fptr);
+            for (int line_index = 0; line_index < max_lines; line_index++)
+            {
+                int point_1 = get_num(text_line, &i);
+                obj_lines[line_index] = (line){point_1 - 1, get_num(text_line, &i) - 1};
+                fgets(text_line, 100, fptr);
+                i = -1;
+            }
+            add_obj(create_obj(obj_points, obj_lines, max_points, max_lines));
         }
     }
 }
@@ -443,14 +493,14 @@ void draw()
     {
         draw_obj(objs[no_ob]);
     }
-    save_sketch("hello.svg");
+    save_sketch("sketch.svg");
     // save_frame();
 }
 
 int main(int argc, char const *argv[])
 {
     set_sketch_size(1099, 1000);
-    set_stroke_width(2);
+    set_stroke_width(3);
 
     if (0 != 0)
     {
