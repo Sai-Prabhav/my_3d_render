@@ -43,12 +43,12 @@ point_3d o = {0, 0, 0};
 point_3d eye_p = {0, 0, 0};
 point_3d eye = {0, 0, 20};
 double plane_dist = 0.6;
-double zoom = 7;
+double zoom = 70;
 int frame_number = 0;
 int numb_obj = 0;
 obj_3d *objs;
 int max_frames = 500;
-int numb_cube = 10;
+int numb_cube = 20;
 
 void save_frame()
 {
@@ -392,7 +392,7 @@ void get_str(char text[], int *i, char str[])
     str[digits++] = '\0';
 }
 
-void make_3d(char path[])
+void draw_from_file(char path[])
 {
     FILE *fptr;
     fptr = fopen(path, "r");
@@ -419,17 +419,17 @@ void make_3d(char path[])
         }
         else if (strcmp(command, "point") == 0)
         {
-            point_3d solo_point[1] = {get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+            point_3d dot_point[1] = {get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
             line lines[0];
-            add_obj(create_obj(solo_point, lines, 1, 0));
+            add_obj(create_obj(dot_point, lines, 1, 0));
         }
         else if (strcmp(command, "line") == 0)
         {
-            point_3d solo_point[2];
-            solo_point[0] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
-            solo_point[1] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+            point_3d line_points[2];
+            line_points[0] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
+            line_points[1] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
             line lines[1] = {0, 1};
-            add_obj(create_obj(solo_point, lines, 2, 1));
+            add_obj(create_obj(line_points, lines, 2, 1));
         }
         else if (strcmp(command, "obj") == 0)
         {
@@ -500,7 +500,7 @@ int main(int argc, char const *argv[])
     set_sketch_size(1099, 1000);
     set_stroke_width(3);
 
-    if (0 != 0)
+    if (0 == 0)
     {
         objs = (obj_3d *)malloc(sizeof(obj_3d));
         for (int q = 0; q < numb_cube; q++)
@@ -515,14 +515,9 @@ int main(int argc, char const *argv[])
             usleep(100000);
         }
         free(objs);
+        
     }
-    char h[5] = "1244";
-    h[2] = '9';
-    h[3] = '\0';
-    make_3d("draw.3d");
-    draw();
 
     save_sketch("cube.svg");
-    printf("%ld", atol(h));
     return 0;
 }

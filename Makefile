@@ -14,5 +14,5 @@ default: $(TARGETS)
 %: %.c
 	$(GCC) $<  -lm -l sketch -o $@ && ./$@
 
-# clean:
-# 	-rm -f $(TARGETS)
+clean:
+	-rm -f $(TARGETS)
