@@ -419,14 +419,12 @@ void make_3d(char path[])
         }
         else if (strcmp(command, "point") == 0)
         {
-            i += 1;
             point_3d solo_point[1] = {get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
             line lines[0];
             add_obj(create_obj(solo_point, lines, 1, 0));
         }
         else if (strcmp(command, "line") == 0)
         {
-            i += 1;
             point_3d solo_point[2];
             solo_point[0] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
             solo_point[1] = (point_3d){get_num(text_line, &i), get_num(text_line, &i), get_num(text_line, &i)};
