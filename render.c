@@ -499,8 +499,8 @@ int main(int argc, char const *argv[])
 {
     set_sketch_size(1099, 1000);
     set_stroke_width(3);
-
-    if (0 == 0)
+    
+    if (1)
     {
         objs = (obj_3d *)malloc(sizeof(obj_3d));
         for (int q = 0; q < numb_cube; q++)
